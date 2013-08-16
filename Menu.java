@@ -9,6 +9,8 @@ public class Menu extends Players{
 
     private int computerOrTwoPlayers = 0;
 
+    private int itemEasyNormalHard = 0;
+
     public void beginMenu() {
         System.out.println("Приветствую в игре \"крестики-нолики\"!!!");
         System.out.println("Выберите вариант игры:");
@@ -26,6 +28,15 @@ public class Menu extends Players{
             itemName = scanner.nextLine();
             setNamePlayerFirst(checkNameLenght(itemName));
             setNamePlayerSecond("Computer");
+            System.out.println();
+            System.out.println("Введите уровень сложности");
+            System.out.println("1 - easy (полный рандом); 2 - normal (есть шанс что Вы проиграете); 3 - hard (МЯСО)");
+            itemEasyNormalHard = scanner.nextInt();
+            while ((itemEasyNormalHard < 1) || (itemEasyNormalHard > 3)) {
+                System.out.print("Ввели не правильное число! Введите заново! =>");
+                itemEasyNormalHard = scanner.nextInt();
+            }
+
         } else {
             System.out.print("Введите имя первого игрока (не менее " + MIN_NAME_LENGHT + " символов  и не более " + MAX_NAME_LENGHT + " символов) =>");
             itemName = scanner.nextLine();              // не знаю почему, но эта строка не хочет считывать без следующей
@@ -64,5 +75,9 @@ public class Menu extends Players{
 
     public int getComputerOrTwoPlayers() {
         return computerOrTwoPlayers;
+    }
+
+    public int getItemEasyNormalHard() {
+        return itemEasyNormalHard;
     }
 }
