@@ -27,6 +27,18 @@ public class Play {
         System.out.println("~~~~~~~~~~~~~~~~~~~~");
         System.out.println("1ый игрок - " + menu.getNamePlayerFirst());
         System.out.println("2ой игрок - " + menu.getNamePlayerSecond());
+        System.out.println();
+        String itemEasyNormalHard;
+        if (menu.getItemEasyNormalHard() == 1) {
+            itemEasyNormalHard = "easy";
+        } else {
+            if (menu.getItemEasyNormalHard() == 2) {
+                itemEasyNormalHard = "normal";
+            } else {
+                itemEasyNormalHard = "hard";
+            }
+        }
+        System.out.println("Уровень: " + itemEasyNormalHard);
         System.out.println("~~~~~~~~~~~~~~~~~~~~");
     }
 
@@ -69,7 +81,15 @@ public class Play {
                 // здесь идет выход на искусственный интеллект
                 if (secondPlayerOrComputer == 1) {
                     if (finish == false) {
-                        finish = stepComputerPlayer();
+                        if (menu.getItemEasyNormalHard() == 1) {
+                            finish = stepComputerPlayerEasy();
+                        }
+                        if (menu.getItemEasyNormalHard() == 2) {
+                            finish = stepComputerPlayerNormal();
+                        }
+                        if (menu.getItemEasyNormalHard() == 3) {
+                            finish = stepComputerPlayerHard();
+                        }
                         drawLastCells();
                         boolean checkDrawGame = drawGame();
                         if (finish == false && checkDrawGame == true) {
@@ -171,23 +191,44 @@ public class Play {
         }
     }
 
-    private boolean stepComputerPlayer() {
+    //************************ начинается ИИ
+    private boolean stepComputerPlayerEasy() {
+        int flag = 0;
+        while (flag == 0) {
+            int i = random.nextInt(DEFAULT_X_POLE);
+            int j = random.nextInt(DEFAULT_Y_POLE);
+            if (steps[i][j] == ' ') {
+                steps[i][j] = 'O';
+                flag = 1;
+            }
+        }
+        return checkSimple();
+    }
+
+    private boolean stepComputerPlayerNormal() {      //пока тоже самое что и easy.. взять из харда часть кода
+        int flag = 0;
+        while (flag == 0) {
+            int i = random.nextInt(DEFAULT_X_POLE);
+            int j = random.nextInt(DEFAULT_Y_POLE);
+            if (steps[i][j] == ' ') {
+                steps[i][j] = 'O';
+                flag = 1;
+            }
+        }
+        return checkSimple();
+    }
+
+    private boolean stepComputerPlayerHard() {
 
         int flagUsed = 0;
         int sumCommonO = 0;
         int sumEmpty = 0;
         int sumX = 0;
         int sumCommon = 0;
-        //проверка на ситуацию OXO по диагонали - поставить О рядом с Х!!!
-        //проверка на ситуацию XOX по диагонали - поставить О в угол!!!    <======= еще не сделано!!!!
+        //проверка на ситуацию XOX по диагонали - поставить О рядом с Х!!!
         //сбор сведений по диагоналям главная
-        for (int q = 0; q < DEFAULT_X_POLE; q++){
-            for (int w = 0; w < DEFAULT_Y_POLE; w++){
-                if (steps[q][w] == ' ') {
-                    flagUsed++;
-                }
-            }
-        }
+        //проверка что это 2ой ход....первый ход чуть ниже описан
+        flagUsed = sumEmpty();
         if (flagUsed == 6) {
             for (int i = 0; i < DEFAULT_X_POLE; i++) {
                 if (steps[i][i] == 'O') {
@@ -196,9 +237,9 @@ public class Play {
                 if (steps[i][i] == 'X') {
                     sumX++;
                 }
-                if (sumCommonO == 1 && sumX == 2) {
-                    //поставить рандом возле любого Х
-                    if (steps[1][1] == 'O') {
+                if (sumCommonO == 1 && sumX == 2) {                        // X - -
+                    //поставить рандом возле любого Х                         // - O -
+                    if (steps[1][1] == 'O') {                              // - - X
                         int flag = 0;
                         int k, m;
                         while (flag != 1){
@@ -207,33 +248,15 @@ public class Play {
                                 m = random.nextInt(DEFAULT_X_POLE);
                             }
                             while ((k != 0 && m != 1) && (k != 1 && m != 0) && (k != 1 && m != 2) && (k != 2 && m != 1));
-                           // while ((k == 0 && m == 1) && (k == 1 && m == 0) && (k == 1 && m == 2) && (k == 2 && m == 1));
+                            // while ((k == 0 && m == 1) && (k == 1 && m == 0) && (k == 1 && m == 2) && (k == 2 && m == 1));
                             if (steps[k][m] == ' ') {
                                 steps[k][m] = 'O';
                                 flag = 1;
                             }
                         }
+                        System.out.println("позиция 1");
                         return checkSimple();
-                    } else {
-                        if (steps[1][1] == 'X') {
-                            int flag = 0;
-                            int k, m;
-                            while (flag != 1) {
-                                do {
-                                    k = random.nextInt(DEFAULT_X_POLE);
-                                    m = random.nextInt(DEFAULT_X_POLE);
-                                }
-                                while ((k != 2 && m != 0) && (k != 0 && m != 2) && (k != 0 && m != 0) && (k != 2 && m != 2));
-                                //while ((k == 2 && m == 0) && (k == 0 && m == 2) && (k == 0 && m == 0) && (k == 2 && m == 2));
-                                if (steps[k][m] == ' ') {
-                                    steps[k][m] = 'O';
-                                    flag = 1;
-                                }
-                            }
-                            return checkSimple();
-                        }
                     }
-
                 }
             }
             sumCommonO = 0;
@@ -249,9 +272,9 @@ public class Play {
                     sumX++;
                 }
                 f--;
-                if (sumCommonO == 1 && sumX == 2) {
-                    //поставить рандом возле любого Х
-                    if (steps[1][1] == 'O') {
+                if (sumCommonO == 1 && sumX == 2) {                      // - - X
+                    //поставить рандом возле любого Х                       // - O -
+                    if (steps[1][1] == 'O') {                            // X - -
                         int flag = 0;
                         int k, m;
                         while (flag != 1){
@@ -266,52 +289,34 @@ public class Play {
                                 flag = 1;
                             }
                         }
+                        System.out.println("позиция 2");
                         return checkSimple();
-                    } else {
-                        if (steps[1][1] == 'X') {
-                            int flag = 0;
-                            int k, m;
-                            while (flag != 1) {
-                                do {
-                                    k = random.nextInt(DEFAULT_X_POLE);
-                                    m = random.nextInt(DEFAULT_X_POLE);
-                                }
-                                while ((k != 0 && m != 0) && (k != 2 && m != 2) && (k != 2 && m != 0) && (k != 0 && m != 2));
-                                //while ((k == 0 && m == 0) && (k == 2 && m == 2) && (k == 2 && m == 0) && (k == 0 && m == 2));
-                                if (steps[k][m] == ' ') {
-                                    steps[k][m] = 'O';
-                                    flag = 1;
-                                }
-                            }
-                            return checkSimple();
-                        }
                     }
-
                 }
             }
-
         }
         //Проверка заполнения клетки посередине в начале игры //при условии компьютер ходит вторым
         sumCommon = 0;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
+        /*for (int i = 0; i < DEFAULT_X_POLE; i++) {
             for (int j = 0; j < DEFAULT_Y_POLE; j++) {
                 if (steps[i][j] == ' ') {
                     sumCommon++;
                 }
             }
-        }
-        //если средняя клетка заполнена - заполнять рандомно угловые клетки
+        }     */
+        sumCommon = sumEmpty();
+        //если средняя клетка заполнена - заполнять рандомно угловые клетки...если не заполнена - заполнять середину
         int flag = 0;
         if (sumCommon > 7) {
-            if (steps[1][1] == ' ') {
-                steps[1][1] = 'O';
-            } else {
+            if (steps[1][1] == ' ') {                                // - - -
+                steps[1][1] = 'O';                                   // - O -
+            } else {                                                 // - - -
                 int i, j;
                 while (flag != 1){
                     do {
-                        i = random.nextInt(DEFAULT_X_POLE);
-                    }
-                    while (i != 0 && i != 2);
+                        i = random.nextInt(DEFAULT_X_POLE);          // O - -
+                    }                                                // - X -
+                    while (i != 0 && i != 2);                        // - - -
                     do {
                         j = random.nextInt(DEFAULT_Y_POLE);
                     }
@@ -322,16 +327,17 @@ public class Play {
                     }
                 }
             }
+            System.out.println("позиция 3");
             return checkSimple();
         }
 
-        //проверка на 2 одинаковых своих символа по линиям и выйграть
+        //проверка на 2 одинаковых своих символа 00 по линиям и выйграть
         //проверка по горизонталям
         sumCommonO = 0;
         sumEmpty = 0;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            for (int j = 0; j < DEFAULT_Y_POLE; j++) {
-                if (steps[i][j] == 'O') {
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {            // O O -
+            for (int j = 0; j < DEFAULT_Y_POLE; j++) {        // - - -
+                if (steps[i][j] == 'O') {                     // - - -
                     sumCommonO++;
                 }
                 if (steps[i][j] == ' ') {
@@ -342,7 +348,8 @@ public class Play {
                 for (int k = 0; k < DEFAULT_X_POLE; k++){
                     if (steps[i][k] == ' ') {
                         steps[i][k] = 'O';
-                        return checkSimple();  //*************************
+                        System.out.println("позиция 4");
+                        return checkSimple();
                     }
                 }
             }
@@ -352,9 +359,9 @@ public class Play {
         //проверка по вертикалям одинаковые OO
         sumCommonO = 0;
         sumEmpty = 0;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            for (int j = 0; j < DEFAULT_Y_POLE; j++) {
-                if (steps[j][i] == 'O') {
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {            // O - -
+            for (int j = 0; j < DEFAULT_Y_POLE; j++) {        // O - -
+                if (steps[j][i] == 'O') {                     // - - -
                     sumCommonO++;
                 }
                 if (steps[j][i] == ' ') {
@@ -365,7 +372,8 @@ public class Play {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[k][i] == ' ') {
                         steps[k][i] = 'O';
-                        return checkSimple();  //****************
+                        System.out.println("позиция 5");
+                        return checkSimple();
                     }
                 }
             }
@@ -377,17 +385,18 @@ public class Play {
         sumCommonO = 0;
         sumEmpty = 0;
         for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            if (steps[i][i] == 'O') {                      
-                sumCommonO++;
-            }
-            if (steps[i][i] == ' ') {                         
+            if (steps[i][i] == 'O') {                      // O - -
+                sumCommonO++;                              // - O -
+            }                                              // - - -
+            if (steps[i][i] == ' ') {
                 sumEmpty++;
             }
             if (sumCommonO == 2 && sumEmpty == 1) {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[k][k] == ' ') {
                         steps[k][k] = 'O';
-                        return checkSimple();  //*************
+                        System.out.println("позиция 6");
+                        return checkSimple();
                     }
                 }
             }
@@ -399,9 +408,9 @@ public class Play {
         for (int i = 0; i < DEFAULT_X_POLE; i++) {
             if (steps[i][f] == 'O') {
                 sumCommonO++;
-            }
-            if (steps[i][f] == ' ') {                     //!=
-                sumEmpty++;
+            }                                             // - - O
+            if (steps[i][f] == ' ') {                     // - O -
+                sumEmpty++;                               // - - -
             }
             f--;
         }
@@ -410,7 +419,8 @@ public class Play {
             for (int k = 0; k < DEFAULT_Y_POLE; k++){
                 if (steps[k][f] == ' ') {
                     steps[k][f] = 'O';
-                    return checkSimple();  //*****************
+                    System.out.println("позиция 7");
+                    return checkSimple();
                 }
                 f--;
             }
@@ -425,9 +435,9 @@ public class Play {
         int sumCommonX = 0;
         sumEmpty = 0;
         for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            for (int j = 0; j < DEFAULT_Y_POLE; j++) {
-                if (steps[i][j] == 'X') {
-                    sumCommonX++;
+            for (int j = 0; j < DEFAULT_Y_POLE; j++) {          // X X -
+                if (steps[i][j] == 'X') {                       // - - -
+                    sumCommonX++;                               // - - -
                 }
                 if (steps[i][j] == ' ') {
                     sumEmpty++;
@@ -437,7 +447,8 @@ public class Play {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[i][k] == ' ') {
                         steps[i][k] = 'O';
-                        return checkSimple(); //****************
+                        System.out.println("позиция 8");
+                        return checkSimple();
                     }
                 }
             }
@@ -448,9 +459,9 @@ public class Play {
         //проверка по вертикали одинаковых ХХ
         sumCommonX = 0;
         sumEmpty = 0;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            for (int j = 0; j < DEFAULT_Y_POLE; j++) {
-                if (steps[j][i] == 'X') {
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {           // X - -
+            for (int j = 0; j < DEFAULT_Y_POLE; j++) {       // X - -
+                if (steps[j][i] == 'X') {                    // - - -
                     sumCommonX++;
                 }
                 if (steps[j][i] == ' ') {
@@ -461,7 +472,8 @@ public class Play {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[k][i] == ' ') {
                         steps[k][i] = 'O';
-                        return checkSimple(); //**************
+                        System.out.println("позиция 9");
+                        return checkSimple();
                     }
                 }
             }
@@ -472,31 +484,32 @@ public class Play {
         //сбор сведений по диагоналям главная
         sumCommonX = 0;
         sumEmpty = 0;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
-            if (steps[i][i] != 'X') {
-                sumCommonX++;
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {         // X - -
+            if (steps[i][i] == 'X') {                      // - X -
+                sumCommonX++;                              // - - -
             }
-            if (steps[i][i] == ' ') {                //!=
+            if (steps[i][i] == ' ') {
                 sumEmpty++;
             }
             if (sumCommonX == 2 && sumEmpty == 1) {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[k][k] == ' ') {
                         steps[k][k] = 'O';
-                        return checkSimple(); //**************
+                        System.out.println("позиция 10");
+                        return checkSimple();
                     }
                 }
             }
         }
         sumCommonX = 0;
         sumEmpty = 0;
-        //сбор сведений по диагоналям второстепенная
-        f = DEFAULT_Y_POLE - 1;
-        for (int i = 0; i < DEFAULT_X_POLE; i++) {
+        //сбор сведений по диагоналям второстепенная           // - - X
+        f = DEFAULT_Y_POLE - 1;                           // - X -
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {        // - - -
             if (steps[i][f] == 'O') {
                 sumCommonX++;
             }
-            if (steps[i][f] == ' ') {                   //!=
+            if (steps[i][f] == ' ') {
                 sumEmpty++;
             }
             f--;
@@ -504,14 +517,190 @@ public class Play {
                 for (int k = 0; k < DEFAULT_Y_POLE; k++){
                     if (steps[k][k] == ' ') {
                         steps[k][k] = 'O';
-                        return checkSimple(); //****************
+                        System.out.println("позиция 11");
+                        return checkSimple();
                     }
                 }
             }
         }
-        //пока в доработке остальные условия хода. На данном этапе просто указывает, что ничего не делает для хода
-        System.out.println("Выполняю непонятно почему!!!!");
-        return false;
+
+        //проверка на 2ой ход, когда по диагонали ОХХ с условием следующим ходом сделать вилку типа // O - -
+                                                                                                    // - X -
+                                                                                                    // - - X
+        //ставим в угол О
+        //главная диагональ...картинка на пару строчек выше в примере
+        //вариант хогда по диагонали ХОХ обработается выше
+        sumCommonX = 0;
+        sumCommonO = 0;
+        sumEmpty = 0;
+        sumEmpty = sumEmpty();                                  // проверка на то что это 2ой ход
+        if (sumEmpty == 6) {
+            for (int i = 0; i < DEFAULT_X_POLE; i++) {
+                if (steps[i][i] == 'X') {
+                    sumCommonX++;
+                }
+                if (steps[i][i] == 'O') {
+                    sumCommonO++;
+                }
+            }
+            flag = 0;
+            if ((sumCommonO == 1) && (sumCommonX == 2)) {
+                int i, j;
+                while (flag != 1) {
+                    do {
+                        i = random.nextInt(DEFAULT_X_POLE);
+                    } while (i != 0 && i != 2);
+                    do {
+                        j = random.nextInt(DEFAULT_Y_POLE);
+                    } while (j != 0 && j != 2);
+                    if (steps[i][j] == ' ') {
+                        steps[i][j] = 'O';
+                        flag = 1;
+                    }
+                }
+                if (flag == 1) {
+                    System.out.println("позиция 12");
+                    return checkSimple();
+                }
+            }
+
+            //второстепенная диагональ...                        // - - O
+            sumCommonX = 0;                                      // - X -
+            sumCommonO = 0;                                      // X - -
+            int w = 2;
+            for (int i = 0; i < DEFAULT_X_POLE; i++) {
+                if (steps[i][w] == 'X') {
+                    sumCommonX++;
+                }
+                if (steps[i][w] == 'O') {
+                    sumCommonO++;
+                }
+                w--;
+            }
+            flag = 0;
+            if ((sumCommonO == 1) && (sumCommonX == 2)) {
+                int i, j;
+                while (flag != 1) {
+                    do {
+                        i = random.nextInt(DEFAULT_X_POLE);
+                    } while (i != 0 && i != 2);
+                    do {
+                        j = random.nextInt(DEFAULT_Y_POLE);
+                    } while (j != 0 && j != 2);
+                    if (steps[i][j] == ' ') {
+                        steps[i][j] = 'O';
+                        flag = 1;
+                    }
+                }
+                if (flag == 1) {
+                    System.out.println("позиция 13");
+                    return checkSimple();
+                }
+            }
+
+            // проверка на ход если 2 X по краям в виде - ставим О между ними в места ** лучше в угол, но тогда игра будет слишком линейна. рандом
+            //не забыть провести анализ хода при вставке О в среднюю - там далее нужно булет проработать нужный ход в ничью между Х!!!!!!!!!!!!!!!!!!!!!!!!
+            // X * *
+            // - O X
+            // - - -
+            int sumFlag = 0;
+            sumCommonO = 0;
+            sumCommonX = 0;
+            sumEmpty = 0;
+            int positionX = -1;
+            int positionY = -1;
+            // горизонтали
+            for (int i = 0; i < DEFAULT_X_POLE; i = i + 2) {
+                for (int j = 0; j < DEFAULT_Y_POLE; j++) {
+                    if (steps[i][j] == ' ') {
+                        sumEmpty++;
+                    }
+                    if (steps[i][j] == 'X') {
+                        sumCommonX++;
+                        positionX = i;
+                    }
+                    if (steps[i][j] == 'O') {
+                        sumCommonO++;
+                    }
+                    if ((sumEmpty == 2) && (sumCommonX == 1) && (sumCommonO == 0)) {
+                        sumFlag++;
+                    }
+                }
+                sumCommonO = 0;
+                sumCommonX = 0;
+                sumEmpty = 0;
+            }
+            // вертикали
+            for (int i = 0; i < DEFAULT_X_POLE; i = i + 2) {
+                for (int j = 0; j < DEFAULT_Y_POLE; j++) {
+                    if (steps[j][i] == ' ') {
+                        sumEmpty++;
+                    }
+                    if (steps[j][i] == 'X') {
+                        sumCommonX++;
+                        positionY = i;
+                    }
+                    if (steps[j][i] == 'O') {
+                        sumCommonO++;
+                    }
+                    if ((sumEmpty == 2) && (sumCommonX == 1) && (sumCommonO == 0)) {
+                        sumFlag++;
+                    }
+                }
+                sumCommonO = 0;
+                sumCommonX = 0;
+                sumEmpty = 0;
+            }
+            // проверка на позицию....если sumFlag == 3 значит такая позиция существует. Ставить О вместо *
+            // так же есть вариант == 2 когда Х стоят в серединах - тогда сразу ставить между ними в углу.
+            // - Х *   - sumFlag = 2
+            // - O X
+            // - - -
+            //поставить условие что в строке и столбце нету ХОХ
+            if  ((steps[0][1] != 'X') || (steps[1][1] != 'O') || (steps[2][1] != 'X')) {
+                if ((steps[1][0] != 'X') || (steps[1][1] != 'O') || (steps[1][2] != 'X')) {
+                    if ((sumFlag == 2) || (sumFlag == 3)) {
+                        System.out.println("позиция 14");
+                        steps[positionX][positionY] = 'O';
+                        return checkSimple();
+                    }
+                }
+            }
+            // проверка на позицию....если sumFlag == 3 значит такая позиция существует. Ставить О вместо *
+            //можно сделать линейно и поставить как и для sumFlag == 2, а можно добавить сложности ИИ и сделать рандома немного
+            /* if (sumFlag == 3 ) {                                             // X * *
+                                                                                // - O X
+            }                                                                   // - - -
+
+            */
+        }
+
+        //если что не прошло - ставим рандом на свободное место
+        flag = 0;
+        while (flag == 0) {
+            int i = random.nextInt(DEFAULT_X_POLE);
+            int j = random.nextInt(DEFAULT_Y_POLE);
+            if (steps[i][j] == ' ') {
+                steps[i][j] = 'O';
+                flag = 1;
+            }
+        }
+        System.out.println("позиция 16");
+        return checkSimple();
+    }
+
+    //*********************************** конец ИИ
+
+    private int sumEmpty() {
+        int sum = 0;
+        for (int i = 0; i < DEFAULT_X_POLE; i++) {
+            for (int j = 0; j < DEFAULT_Y_POLE; j++){
+                if (steps[i][j] == ' ') {
+                    sum++;
+                }
+            }
+        }
+        return sum;
     }
 
     private boolean checkSimple() {
@@ -524,6 +713,7 @@ public class Play {
         }
     }
 
+    //*************************************** проверка на победу
     public boolean checkForWin() {
         //проверка по горизонталям
         int winGoriz = 0;
@@ -576,6 +766,8 @@ public class Play {
         return false;
     }
 
+    //************************************** конец проверки на победу
+
     private int checkEnterPositions(int number) {
         while (number < 1 || number > DEFAULT_X_POLE+1) {
             System.out.println("Введенное число не входит в рамки больше 1 и меньше " + (DEFAULT_Y_POLE+1) + "!!!");
@@ -593,6 +785,7 @@ public class Play {
         return false;
     }
 
+    //************************************** проверка на ничью     пока что-то не всегда правильно. Возможно поставить вопрос предложить ничью или продолжить!!!
     private boolean drawGame() {
         int draw = 0;
         int commonScore = 0;
@@ -713,6 +906,7 @@ public class Play {
         }
         return false;
     }
+    //*****************************************конец проверки на ничью
 
     public int repeatGame(int number) {
         while (number != 1 && number != 0) {
@@ -722,5 +916,4 @@ public class Play {
         }
         return number;
     }
-
 }
